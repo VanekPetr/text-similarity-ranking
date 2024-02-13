@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "text-similarity-ranking"
+version = "0.0.0"
+description = "Algorithm to rank text similarity between set of strings and given inputs."
+authors = ["Petr Vanek"]
+readme = "README.md"
+repository = "https://github.com/VanekPetr/text-classification-ranking"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+pandas = "2.2.0"
+pandas-datareader = "0.10.0"
+numpy = "1.26.4"
+loguru = "0.7.2"
+
+[tool.poetry.group.test.dependencies]
+pytest = "*"
+pytest-cov = "*"
+pre-commit = "*"
+
+[build-system]
+requires = ["poetry>=1.6.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+lint.select = ["E", "F", "I"]
+line-length = 120
+target-version = "py310"
+exclude = [
+    "*__init__.py"
+]
