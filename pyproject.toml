@@ -15,6 +15,7 @@ loguru = "0.7.2"
 pre-commit = "3.6.1"
 scikit-learn = "1.4.0"
 gensim = "4.3.2"
+pyarrow = "15.0.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
