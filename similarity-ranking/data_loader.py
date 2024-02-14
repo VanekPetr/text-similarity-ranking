@@ -27,8 +27,6 @@ def load_all_extractions(path: str) -> pd.DataFrame:
     all_extractions = all_extractions.dropna(subset=["value"])
     # create domain column from sender domain to take part of sender after @ sign
     all_extractions["domain"] = all_extractions["sender"].str.split("@").str[1]
-    # delete all rows source is 'fallback'
-    all_extractions = all_extractions[all_extractions["source"] != "fallback"]
 
     return all_extractions
 

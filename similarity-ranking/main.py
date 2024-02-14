@@ -55,43 +55,78 @@ def performance_statistics(test_data_path: str, confirmed_data_paths: List[str])
                 results = compare_all(
                     extraction_alternatives,
                     confirmed_extractions_for_domain,
-                    strategy="max",
+                    strategy="average",
                 )
-                if results[0]["input_word"] in correct_extraction[0]:
+                to_print = {res['input_word']: res['similarity'] for res in results}
+                if results[0]["input_word"] in correct_extraction:
                     correct_confirmed += 1
+                elif correct_extraction[0] not in extraction_alternatives:
+                    if results[0]["similarity"] < 0.9:
+                        correct_confirmed += 1
+                    else:
+                        incorrect_confirmed += 1
+                        logger.debug(
+                            f"🚫 Correct extraction not in alternative, "
+                            f"🦮 result: {to_print}, "
+                            f"correct: {correct_extraction[0]}, "
+                            f"confirmed: {confirmed_extractions_for_domain}"
+                        )
                 else:
                     incorrect_confirmed += 1
                     logger.debug(
-                        f"results: {results}, correct: {correct_extraction[0]}, "
-                        f"predicted: {results[0]['input_word']}, "
+                        f"🦮 result: {to_print}, "
+                        f"correct: {correct_extraction[0]}, "
                         f"confirmed: {confirmed_extractions_for_domain}"
                     )
 
             else:
                 number_of_tested_mail_envelope_ids -= 1
-                confirmed_extractions: List[str] = confirmed_extractions_df[
-                    confirmed_extractions_df["mail_envelope_id"] != mail_envelope_id
-                    ]["value"].tolist()
-                results = compare_all(
-                    extraction_alternatives,
-                    confirmed_extractions,
+                similar_domains = compare_all(
+                    extraction_alternatives_df["domain"].unique().tolist(),
+                    [domain],
                     strategy="max",
                 )
-                if results[0]["input_word"] in correct_extraction[0]:
+                similar_domains = [d['input_word'] for d in similar_domains if d["similarity"] > 0.97 and d['input_word'] != domain]
+                if len(similar_domains) > 0:
+                    confirmed_extractions_for_domain: List[str] = confirmed_extractions_df[
+                        (confirmed_extractions_df["mail_envelope_id"] != mail_envelope_id)
+                        & (confirmed_extractions_df["domain"].isin(similar_domains))
+                        ]["value"].tolist()
+                else:
+                    confirmed_extractions_for_domain: List[str] = confirmed_extractions_df[
+                        (confirmed_extractions_df["mail_envelope_id"] != mail_envelope_id)
+                    ]["value"].tolist()
+
+                results = compare_all(
+                    extraction_alternatives,
+                    confirmed_extractions_for_domain,
+                    strategy="average",
+                )
+                to_print = {res['input_word']: res['similarity'] for res in results}
+                if results[0]["input_word"] in correct_extraction:
                     correct_other += 1
+                elif correct_extraction[0] not in extraction_alternatives:
+                    if results[0]["similarity"] < 0.9:
+                        correct_other += 1
+                    else:
+                        incorrect_other += 1
+                        logger.debug(
+                            f"🚫 Correct extraction not in alternative, "
+                            f"🐩 result: {to_print} 💩 "
+                            f"correct: {correct_extraction[0]}"
+                        )
                 else:
                     incorrect_other += 1
                     logger.debug(
-                        f"results: {results}, correct: {correct_extraction[0]}, "
-                        f"predicted: {results[0]['input_word']}, "
-                        f"confirmed: {confirmed_extractions_for_domain}"
+                        f"🐩 result: {to_print} 💩 "
+                        f"correct: {correct_extraction[0]}"
                     )
 
             processing_times.append(time.time() - start)
 
         else:
             logger.exception(
-                f"No confirmed extractions for mail envelope id: {mail_envelope_id}"
+                f"🚫 No confirmed extractions for mail envelope id: {mail_envelope_id}"
             )
     logger.warning(f"🚫 Domains without confirmed cases other than correct extraction: "
                    f"{len(unique_mail_envelope_ids) - number_of_tested_mail_envelope_ids}")
@@ -116,7 +151,7 @@ def performance_statistics(test_data_path: str, confirmed_data_paths: List[str])
         f"{round((correct_other / (len(unique_mail_envelope_ids) - number_of_tested_mail_envelope_ids)) * 100, 2)}%"
     )
     logger.info(
-        f"💪 Total accuracy: "
+        f"🚀 Total accuracy: "
         f"{round(((correct_confirmed + correct_other) / len(unique_mail_envelope_ids)) * 100, 2)}%"
     )
 
