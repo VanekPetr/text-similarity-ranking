@@ -14,7 +14,7 @@ The Jaro-Winkler algorithm is a well-established metric for measuring the simila
 
 In this repository, we have implemented the Jaro-Winkler algorithm with a focus on optimizing it for short words that are abundant with numbers. This adaptation ensures that our approach is sensitive to the unique challenges presented by numerical-heavy strings, providing more accurate similarity assessments.
 
-## Jars-Winkler-Vanek (JWV) Algorithm
+## Jaro-Winkler-Vanek (JWV) Algorithm
 
 Building on the foundations of the Jaro-Winkler algorithm, we introduce the Jars-Winkler-Vanek (JWV) algorithm. This innovative modification is engineered to better handle our specific scenario: comparing short words with a significant numerical component.
 
