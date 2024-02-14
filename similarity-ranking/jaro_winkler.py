@@ -1,9 +1,3 @@
-import time
-from typing import List
-
-from loguru import logger
-
-
 def jaro_similarity(s1: str, s2: str) -> float:
     # Implementation of Jaro similarity
     s1_len = len(s1)
@@ -56,7 +50,9 @@ def jaro_similarity(s1: str, s2: str) -> float:
     return jaro_similarity
 
 
-def jaro_winkler_similarity(s1: str, s2: str, p: float = 0.1) -> float:
+def jaro_winkler_similarity(
+    s1: str, s2: str, p: float = 0.1, max_prefix_len: int = 9
+) -> float:
     # Implementation of Jaro-Winkler similarity
     jaro_sim = jaro_similarity(s1, s2)
 
@@ -65,6 +61,8 @@ def jaro_winkler_similarity(s1: str, s2: str, p: float = 0.1) -> float:
     for i in range(min(len(s1), len(s2))):
         if s1[i] == s2[i]:
             prefix_len += 1
+            if prefix_len == max_prefix_len:
+                break
         else:
             break
 
@@ -72,38 +70,3 @@ def jaro_winkler_similarity(s1: str, s2: str, p: float = 0.1) -> float:
     jaro_winkler_sim = jaro_sim + (prefix_len * p * (1 - jaro_sim))
 
     return jaro_winkler_sim
-
-
-def compare_all(input_words: List[str], set_words: List[str]) -> List[dict]:
-    start = time.time()
-
-    results = []
-    for input_word in input_words:
-        for set_word in set_words:
-            similarity = jaro_winkler_similarity(input_word, set_word)
-            results.append(
-                {
-                    "input_word": input_word,
-                    "set_word": set_word,
-                    "similarity": similarity,
-                }
-            )
-
-    logger.info(f"The ranking algorithm took {time.time() - start} seconds.")
-    # Sort the results by similarity
-    results.sort(key=lambda x: x["similarity"], reverse=True)
-
-    return results
-
-
-if __name__ == "__main__":
-    # Example usage
-    input_words_test = ["LBL 34566", "9475632", "34566"]
-    set_words_test = ["LBL 345532", "LBB 234545"]
-
-    all_comparisons = compare_all(input_words_test, set_words_test)
-
-    for comparison in all_comparisons:
-        print(
-            f"Input: {comparison['input_word']}, Set: {comparison['set_word']}, Similarity: {comparison['similarity']}"
-        )
