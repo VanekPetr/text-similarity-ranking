@@ -28,11 +28,6 @@ def jaro_winkler_vanek_similarity(
     else:
         jaro_winkler_vanek_sim = jaro_winkler_sim
 
-    if " " in s1 and " " in s2:
-        jaro_winkler_vanek_sim = jaro_winkler_vanek_sim + (
-            p * (1 - jaro_winkler_vanek_sim)
-        )
-
     if "VAT" in s1 or "VAT" in s2:
         jaro_winkler_vanek_sim = jaro_winkler_vanek_sim * 0.8
 
@@ -85,7 +80,7 @@ def compare_all(
         ]
     elif strategy == "average_top_10":
         # take the top highest similarities for each input word and calculate the average
-        result = []
+        results_tmp = []
         for input_word in input_words:
             similarities = [
                 item["similarity"]
@@ -93,12 +88,13 @@ def compare_all(
                 if item["input_word"] == input_word
             ]
             similarities.sort(reverse=True)
-            result.append(
+            results_tmp.append(
                 {
                     "input_word": input_word,
                     "similarity": sum(similarities[:10]) / 10,
                 }
             )
+        results = results_tmp
 
     results.sort(key=lambda x: x["similarity"], reverse=True)
 

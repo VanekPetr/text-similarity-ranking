@@ -81,40 +81,20 @@ def performance_statistics(test_data_path: str, confirmed_data_paths: List[str])
 
             else:
                 number_of_tested_mail_envelope_ids -= 1
-                similar_domains = compare_all(
-                    extraction_alternatives_df["domain"].unique().tolist(),
-                    [domain],
-                    strategy="max",
+
+                confirmed_extractions_for_domain: List[str] = (
+                    confirmed_extractions_df[
+                        (
+                            confirmed_extractions_df["mail_envelope_id"]
+                            != mail_envelope_id
+                        )
+                    ]["value"].tolist()
                 )
-                similar_domains = [
-                    d["input_word"]
-                    for d in similar_domains
-                    if d["similarity"] > 0.97 and d["input_word"] != domain
-                ]
-                if len(similar_domains) > 0:
-                    confirmed_extractions_for_domain: List[str] = (
-                        confirmed_extractions_df[
-                            (
-                                confirmed_extractions_df["mail_envelope_id"]
-                                != mail_envelope_id
-                            )
-                            & (confirmed_extractions_df["domain"].isin(similar_domains))
-                        ]["value"].tolist()
-                    )
-                else:
-                    confirmed_extractions_for_domain: List[str] = (
-                        confirmed_extractions_df[
-                            (
-                                confirmed_extractions_df["mail_envelope_id"]
-                                != mail_envelope_id
-                            )
-                        ]["value"].tolist()
-                    )
 
                 results = compare_all(
                     extraction_alternatives,
-                    confirmed_extractions_for_domain,
-                    strategy="average",
+                    confirmed_extractions_for_domain[:200],
+                    strategy="average_top_10",
                 )
                 to_print = {res["input_word"]: res["similarity"] for res in results}
                 if results[0]["input_word"] in correct_extraction:
@@ -174,5 +154,5 @@ def performance_statistics(test_data_path: str, confirmed_data_paths: List[str])
 if __name__ == "__main__":
     performance_statistics(
         test_data_path="/data/all_extractions_train.csv",
-        confirmed_data_paths=["/data/all_confirmed_mails_train.csv"],
+        confirmed_data_paths=["/data/all_confirmed_mails_train.csv", "/data/new.csv"],
     )
