@@ -57,7 +57,9 @@ def performance_statistics(test_data_path: str, confirmed_data_paths: List[str])
                 else:
                     incorrect += 1
                     print(
-                        f"alternatives: {extraction_alternatives}, correct: {correct_extraction}, prediction: {results[0]['input_word']}, certainty: {results[0]['similarity']}, confirmed: {confirmed_extractions_for_domain}"
+                        f"alternatives: {extraction_alternatives}, correct: {correct_extraction}, "
+                        f"prediction: {results[0]['input_word']}, certainty: {results[0]['similarity']}, "
+                        f"confirmed: {confirmed_extractions_for_domain}"
                     )
             else:
                 logger.warning(f"No confirmed extractions for domain: {domain}")
