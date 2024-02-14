@@ -3,7 +3,9 @@ from typing import List
 from jaro_winkler import jaro_winkler_similarity
 
 
-def jaro_winkler_vanek_similarity(s1: str, s2: str, p: float = 0.1, vanek: bool = True) -> float:
+def jaro_winkler_vanek_similarity(
+    s1: str, s2: str, p: float = 0.1, vanek: bool = True
+) -> float:
     # Implementation of Jaro-Winkler similarity
     jaro_winkler_sim = jaro_winkler_similarity(s1, s2)
 
@@ -26,10 +28,12 @@ def jaro_winkler_vanek_similarity(s1: str, s2: str, p: float = 0.1, vanek: bool 
     else:
         jaro_winkler_vanek_sim = jaro_winkler_sim
 
-    if ' ' in s1 and ' ' in s2:
-        jaro_winkler_vanek_sim = jaro_winkler_vanek_sim + (p * (1 - jaro_winkler_vanek_sim))
+    if " " in s1 and " " in s2:
+        jaro_winkler_vanek_sim = jaro_winkler_vanek_sim + (
+            p * (1 - jaro_winkler_vanek_sim)
+        )
 
-    if 'VAT' in s1 or 'VAT' in s2:
+    if "VAT" in s1 or "VAT" in s2:
         jaro_winkler_vanek_sim = jaro_winkler_vanek_sim * 0.8
 
     return jaro_winkler_vanek_sim
