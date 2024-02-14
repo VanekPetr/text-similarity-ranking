@@ -16,7 +16,7 @@ In this repository, we have implemented the Jaro-Winkler algorithm with a focus 
 
 ## Jars-Winkler-Vanek (JWV) Algorithm
 
-Building on the foundations of the Jaro-Winkler algorithm, we introduce the Jars-Winkler-Vanek (JWV) algorithm. This innovative modification is engineered to better handle our specific scenario: comparing short words with a significant numerical component. 
+Building on the foundations of the Jaro-Winkler algorithm, we introduce the Jars-Winkler-Vanek (JWV) algorithm. This innovative modification is engineered to better handle our specific scenario: comparing short words with a significant numerical component.
 
 ### Key Features
 
@@ -45,7 +45,7 @@ poetry install -vv
 
 ## **Usage**
 
-Detailed usage instructions for implementing both the Jaro-Winkler and JWV algorithms are provided in the respective module documentation within the repository. 
+Detailed usage instructions for implementing both the Jaro-Winkler and JWV algorithms are provided in the respective module documentation within the repository.
 
 ## Contributing
 
