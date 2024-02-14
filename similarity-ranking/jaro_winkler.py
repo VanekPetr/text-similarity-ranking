@@ -90,6 +90,9 @@ def compare_all(input_words: List[str], set_words: List[str]) -> List[dict]:
             )
 
     logger.info(f"The ranking algorithm took {time.time() - start} seconds.")
+    # Sort the results by similarity
+    results.sort(key=lambda x: x["similarity"], reverse=True)
+
     return results
 
 
