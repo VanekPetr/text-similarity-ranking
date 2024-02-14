@@ -82,14 +82,9 @@ def performance_statistics(test_data_path: str, confirmed_data_paths: List[str])
             else:
                 number_of_tested_mail_envelope_ids -= 1
 
-                confirmed_extractions_for_domain: List[str] = (
-                    confirmed_extractions_df[
-                        (
-                            confirmed_extractions_df["mail_envelope_id"]
-                            != mail_envelope_id
-                        )
-                    ]["value"].tolist()
-                )
+                confirmed_extractions_for_domain: List[str] = confirmed_extractions_df[
+                    (confirmed_extractions_df["mail_envelope_id"] != mail_envelope_id)
+                ]["value"].tolist()
 
                 results = compare_all(
                     extraction_alternatives,
