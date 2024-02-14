@@ -8,11 +8,21 @@ def jaro_winkler_vanek_similarity(s1: str, s2: str, p_num_words: float = 0.1) ->
     jaro_winkler_sim = jaro_winkler_similarity(s1, s2)
 
     if len(s1.split()) == len(s2.split()):
-        number_of_words = min(len(s1.split()), 5)
-        # Calculate Jaro-Winkler-Vanek similarity
-        jaro_winkler_vanek_sim = jaro_winkler_sim + (
-            number_of_words * p_num_words * (1 - jaro_winkler_sim)
-        )
+        if len(s1.split()) > 1:
+            number_of_words = min(len(s1.split()), 5)
+            # Calculate Jaro-Winkler-Vanek similarity
+            jaro_winkler_vanek_sim = jaro_winkler_sim + (
+                number_of_words * p_num_words * (1 - jaro_winkler_sim)
+            )
+        else:
+            if len(s1) == len(s2):
+                number_of_chars = min(len(s1), 5)
+                # Calculate Jaro-Winkler-Vanek similarity
+                jaro_winkler_vanek_sim = jaro_winkler_sim + (
+                    number_of_chars * p_num_words * (1 - jaro_winkler_sim)
+                )
+            else:
+                jaro_winkler_vanek_sim = jaro_winkler_sim
     else:
         jaro_winkler_vanek_sim = jaro_winkler_sim
 
@@ -33,7 +43,7 @@ def compare_all(
                     "similarity": similarity,
                 }
             )
-    strategy = "max"  # max, average, soft-max
+
     if strategy == "max":
         # take predictions just with max similarity for each input word
         results = [
