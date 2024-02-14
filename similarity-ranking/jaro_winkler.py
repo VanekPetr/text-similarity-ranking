@@ -1,5 +1,6 @@
 import time
 from typing import List
+
 from loguru import logger
 
 
@@ -46,7 +47,11 @@ def jaro_similarity(s1: str, s2: str) -> float:
     transpositions //= 2
 
     # Calculate Jaro similarity
-    jaro_similarity = (match_count / s1_len + match_count / s2_len + (match_count - transpositions) / match_count) / 3
+    jaro_similarity = (
+        match_count / s1_len
+        + match_count / s2_len
+        + (match_count - transpositions) / match_count
+    ) / 3
 
     return jaro_similarity
 
@@ -76,7 +81,13 @@ def compare_all(input_words: List[str], set_words: List[str]) -> List[dict]:
     for input_word in input_words:
         for set_word in set_words:
             similarity = jaro_winkler_similarity(input_word, set_word)
-            results.append({"input_word": input_word, "set_word": set_word, "similarity": similarity})
+            results.append(
+                {
+                    "input_word": input_word,
+                    "set_word": set_word,
+                    "similarity": similarity,
+                }
+            )
 
     logger.info(f"The ranking algorithm took {time.time() - start} seconds.")
     return results
@@ -90,4 +101,6 @@ if __name__ == "__main__":
     all_comparisons = compare_all(input_words_test, set_words_test)
 
     for comparison in all_comparisons:
-        print(f"Input: {comparison['input_word']}, Set: {comparison['set_word']}, Similarity: {comparison['similarity']}")
+        print(
+            f"Input: {comparison['input_word']}, Set: {comparison['set_word']}, Similarity: {comparison['similarity']}"
+        )
