@@ -1,11 +1,12 @@
 import os
+
 import pandas as pd
 
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def data_loader(test_data_path: str) -> pd.DataFrame:
-    """ Load test data from csv file """
+    """Load test data from csv file"""
 
     data: pd.DataFrame = pd.read_csv(PARENT_DIR + test_data_path)
     # delete all rows where text_inputs is empty
