@@ -1,3 +1,4 @@
+import ast
 import time
 from typing import List
 
@@ -6,148 +7,54 @@ from jaro_winkler_vanek import compare_all
 from loguru import logger
 
 
-def performance_statistics(test_data_path: str, confirmed_data_paths: List[str]):
+def performance_statistics(test_data_path: str):
     """Performance statistics for the similarity ranking model"""
-    correct_confirmed, incorrect_confirmed, correct_other, incorrect_other = 0, 0, 0, 0
+    correct, incorrect = 0, 0
     processing_times = []
 
-    extraction_alternatives_df, confirmed_extractions_df = data_loader(
-        test_data_path, confirmed_data_paths
-    )
+    test_data = data_loader(test_data_path)
     logger.info("✅ Data loaded successfully")
+    logger.info(f"#️⃣ of unique data points: {len(test_data)}")
 
-    unique_mail_envelope_ids: List[str] = extraction_alternatives_df[
-        "mail_envelope_id"
-    ].unique()
-    number_of_tested_mail_envelope_ids: int = len(unique_mail_envelope_ids)
-    logger.info(f"#️⃣ of unique mail envelope ids: {number_of_tested_mail_envelope_ids}")
+    for tested_example in test_data.iterrows():
+        start = time.time()
 
-    for mail_envelope_id in unique_mail_envelope_ids:
-        extraction_alternatives: List[str] = (
-            extraction_alternatives_df[
-                extraction_alternatives_df["mail_envelope_id"] == mail_envelope_id
-            ]["value"]
-            .unique()
-            .tolist()
+        text_inputs: List[str] = ast.literal_eval(tested_example[1]["text_inputs"])
+        to_compare_with: List[str] = ast.literal_eval(
+            tested_example[1]["to_compare_with"]
+        )
+        the_most_similar: List[str] = ast.literal_eval(
+            tested_example[1]["the_most_similar"]
         )
 
-        domain: str = (
-            extraction_alternatives_df[
-                extraction_alternatives_df["mail_envelope_id"] == mail_envelope_id
-            ]["domain"]
-            .unique()
-            .tolist()[0]
+        results = compare_all(
+            text_inputs,
+            to_compare_with,
+            strategy="average",
         )
+        to_print = {res["input_word"]: res["similarity"] for res in results}
 
-        confirmed_extractions_for_domain: List[str] = confirmed_extractions_df[
-            (confirmed_extractions_df["domain"] == domain)
-            & (confirmed_extractions_df["mail_envelope_id"] != mail_envelope_id)
-        ]["value"].tolist()
-
-        correct_extraction: List[str] = confirmed_extractions_df[
-            confirmed_extractions_df["mail_envelope_id"] == mail_envelope_id
-        ]["value"].tolist()
-
-        if len(correct_extraction) > 0:
-            start = time.time()
-
-            if len(confirmed_extractions_for_domain) > 0:
-                results = compare_all(
-                    extraction_alternatives,
-                    confirmed_extractions_for_domain,
-                    strategy="average",
-                )
-                to_print = {res["input_word"]: res["similarity"] for res in results}
-                if results[0]["input_word"] in correct_extraction:
-                    correct_confirmed += 1
-                elif correct_extraction[0] not in extraction_alternatives:
-                    if results[0]["similarity"] < 0.9:
-                        correct_confirmed += 1
-                    else:
-                        incorrect_confirmed += 1
-                        logger.debug(
-                            f"🚫 Correct extraction not in alternative, "
-                            f"🦮 result: {to_print}, "
-                            f"correct: {correct_extraction[0]}, "
-                            f"confirmed: {confirmed_extractions_for_domain}"
-                        )
-                else:
-                    incorrect_confirmed += 1
-                    logger.debug(
-                        f"🦮 result: {to_print}, "
-                        f"correct: {correct_extraction[0]}, "
-                        f"confirmed: {confirmed_extractions_for_domain}"
-                    )
-
-            else:
-                number_of_tested_mail_envelope_ids -= 1
-
-                confirmed_extractions_for_domain: List[str] = confirmed_extractions_df[
-                    (confirmed_extractions_df["mail_envelope_id"] != mail_envelope_id)
-                ]["value"].tolist()
-
-                results = compare_all(
-                    extraction_alternatives,
-                    confirmed_extractions_for_domain[:200],
-                    strategy="average_top_10",
-                )
-                to_print = {res["input_word"]: res["similarity"] for res in results}
-                if results[0]["input_word"] in correct_extraction:
-                    correct_other += 1
-                elif correct_extraction[0] not in extraction_alternatives:
-                    if results[0]["similarity"] < 0.9:
-                        correct_other += 1
-                    else:
-                        incorrect_other += 1
-                        logger.debug(
-                            f"🚫 Correct extraction not in alternative, "
-                            f"🐩 result: {to_print} 💩 "
-                            f"correct: {correct_extraction[0]}"
-                        )
-                else:
-                    incorrect_other += 1
-                    logger.debug(
-                        f"🐩 result: {to_print} 💩 " f"correct: {correct_extraction[0]}"
-                    )
-
-            processing_times.append(time.time() - start)
-
+        if results[0]["input_word"] in the_most_similar:
+            correct += 1
         else:
-            logger.exception(
-                f"🚫 No confirmed extractions for mail envelope id: {mail_envelope_id}"
+            incorrect += 1
+            logger.debug(
+                f"⚠️ result: {to_print}, "
+                f"correct: {the_most_similar[0]}, "
+                f"confirmed: {to_compare_with}"
             )
-    logger.warning(
-        f"🚫 Domains without confirmed cases other than correct extraction: "
-        f"{len(unique_mail_envelope_ids) - number_of_tested_mail_envelope_ids}"
-    )
+
+        processing_times.append(time.time() - start)
+
     logger.info(
         f"🕙 Average prediction time: {round(sum(processing_times) / len(processing_times), 5)}s, "
         f"Total processing time: {round(sum(processing_times), 5)}s"
     )
     logger.info(
-        f"🏁 Correct for cases with confirmed examples: {correct_confirmed}, "
-        f"Incorrect: {incorrect_confirmed} out of {number_of_tested_mail_envelope_ids}"
+        f"🏁 Correct cases: {correct}, Incorrect cases: {incorrect} out of {len(test_data)}"
     )
-    logger.info(
-        f"🏁 Correct for cases with confirmed examples: {correct_other},"
-        f" Incorrect: {incorrect_other} out of {len(unique_mail_envelope_ids) - number_of_tested_mail_envelope_ids}"
-    )
-    logger.info(
-        f"💪 Accuracy for cases with confirmed examples: "
-        f"{round((correct_confirmed / number_of_tested_mail_envelope_ids) * 100, 2)}%"
-    )
-    logger.info(
-        f"💪 Accuracy for cases without confirmed examples: "
-        f"{round((correct_other / (len(unique_mail_envelope_ids) - number_of_tested_mail_envelope_ids)) * 100, 2)}%"
-    )
-    logger.info(
-        f"🚀 Total accuracy: "
-        f"{round(((correct_confirmed + correct_other) / len(unique_mail_envelope_ids)) * 100, 2)}%"
-    )
+    logger.info(f"💪 Accuracy: {round((correct / len(test_data)) * 100, 2)}%")
 
 
 if __name__ == "__main__":
-    performance_statistics(
-        test_data_path="/data/all_extractions_train.csv",
-        confirmed_data_paths=["/data/all_confirmed_mails_train.csv", "/data/new.csv"],
-    )
+    performance_statistics(test_data_path="/data/test_data.csv")
