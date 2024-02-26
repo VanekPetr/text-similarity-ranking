@@ -8,7 +8,7 @@ repository = "https://github.com/VanekPetr/text-classification-ranking"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
-pandas = "2.2.0"
+pandas = "2.2.1"
 pandas-datareader = "0.10.0"
 numpy = "1.26.4"
 loguru = "0.7.2"
